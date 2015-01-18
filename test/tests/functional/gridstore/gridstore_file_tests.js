@@ -1,4 +1,5 @@
 var Step = require('step');
+var util = require('util');
 
 /**
  * @ignore
@@ -1292,3 +1293,23 @@ exports.shouldCorrectlyReturnErrorMessageOnNoFileExisting = function(configurati
     });
   });
 }
+
+/**
+ * @ignore
+ */
+exports.shouldCorrectlyReturnErrorMessageOnNoFileExistingWithComplexKey = function(configuration, test) {
+  var GridStore = configuration.getMongoPackage().GridStore;
+
+  var db = configuration.newDbInstance({w:1}, {poolSize:1});
+  db.open(function(err, db) {
+    var id = {"name": "John", "age": 22};
+    var gridStore = new GridStore(db, id, "r");
+    gridStore.open(function(err, gridStore) {
+      test.ok(err != null);
+      test.equal(err.message, util.inspect(id) + " does not exist");
+      db.close();
+      test.done();
+    });
+  });
+}
+
